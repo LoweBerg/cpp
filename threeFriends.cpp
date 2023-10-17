@@ -4,7 +4,7 @@
 using namespace std;
 
 int main() {
-    string input = "SABABABABS";
+    string input = "SABABABAB";
 
     if(input.length() % 2 == 0 || input.length() < 3) {
         cout << "not possible";
@@ -36,7 +36,6 @@ int main() {
     p2 = input.length() / 2;
 
     // error in right
-
     while(p2 < input.length() && p1 < input.length()/2) {
         if(input.at(p1) != input.at(p2)) {
             rwrongs++;
