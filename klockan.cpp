@@ -34,6 +34,56 @@ int powerDraw(int t) {
     
 }
 
+
+int bruteForce(vector<long long> draw, int target) {
+    long long result = 0;
+    int counter = 0;
+    for(int l = 0; l < draw.size(); l++) {
+        for (int r = l; r < draw.size(); r++) {
+            result = draw.at(r) - draw.at(l);
+            if(result == target) {
+                counter++;
+            } else if(result > target) {
+                goto cont;
+            }
+        }
+        return counter;
+        cont:;
+    }
+    
+    return counter;
+}
+
+int binarySearch(vector<long long> draw, int target) {
+    int result = 0;
+    int counter = 0;
+    for(int i = 0; i < draw.size(); i++) {
+        int l = i;
+        int r = draw.size() - 1;
+        int m;
+
+        while(l < r) {
+            m = (r+l)/2;
+            result = draw.at(m) - draw.at(i);
+
+            if(result == target) {
+                counter++;
+                goto cont;  
+            } else if(result < target) {
+                l = m+1;
+            } else {
+                r = m-1;
+            }
+        }
+        result = draw.at(l) - draw.at(i);
+        if(result == target)
+            counter++;
+        cont:;
+    }
+
+    return counter;
+}
+
 int main() {
     int endTime = 86400;
     vector<long long> draw;
@@ -50,19 +100,8 @@ int main() {
     long long counter = 0;
     long long result = 0;
 
-
-    for(int l = 0; l < draw.size(); l++) {
-        for (int r = l; r < draw.size(); r++) {
-            result = draw.at(r) - draw.at(l);
-            if(result == target) {
-                counter++;
-            } else if(result > target) {
-                goto cont;
-            }
-        }
-        goto endLoop;
-        cont:;
-    }
-    endLoop:
-    cout << counter;
+// maybe binary search instead of n^2 loop?
+    
+    // cout << bruteForce(draw, target) << endl;
+    cout << binarySearch(draw, target) << endl;
 }
