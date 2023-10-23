@@ -48,21 +48,21 @@ int main() {
     cin >> target;
 
     long long counter = 0;
+    long long result = 0;
 
-    counter = 0;
-
-    cout << draw.back() - draw.front() << endl;
 
     for(int l = 0; l < draw.size(); l++) {
         for (int r = l; r < draw.size(); r++) {
-            if((draw.at(r) - draw.at(l)) == target) {
+            result = draw.at(r) - draw.at(l);
+            if(result == target) {
                 counter++;
-            } else if((draw.at(r) - draw.at(l)) > target) {
+            } else if(result > target) {
                 goto cont;
             }
         }
+        goto endLoop;
         cont:;
     }
-
+    endLoop:
     cout << counter;
 }
