@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <unordered_map>
 
 using namespace std;
 
@@ -10,18 +11,24 @@ int main() {
     cin >> n;
 
     vector<int> t(n);
-    vector<int> dp(n + 1);
 
-    int current = m;
-    for(int i = dp.size() - 2; i >= 0; i--) {
-        current = m - i;
+    for(int e : t) {
+        cin >> e;
+    }
+    vector<int> dp(m);
 
-        for(int e : t) {
-            if(current + e <= m) {
-                
+    for(int i = 0; i <= m; i++) {
+        for(int j = 0; j < t.size(); j++) {
+            if(i - t[j] == 0) {
+                dp[i]++;
+            } else if(i - t[j] > 0) {
+                if(dp[i-t[j]] > 0)
+                    dp[i] += dp[i-t[j]];
             }
         }
     }
+
+    cout << dp[m] << endl;
 
 
 }
