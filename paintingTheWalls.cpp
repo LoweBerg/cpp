@@ -27,7 +27,7 @@ int main() {
 
 int chooseSmallWall(vector<int>& cost, vector<int> &time, vector<int>& takenWalls) {
     int index = 0;
-    double smallest = INT16_MAX;
+    double smallest = INT64_MAX;
     /* 
     need to find some times that, when added together, equals the
     number of elements left in the time array
