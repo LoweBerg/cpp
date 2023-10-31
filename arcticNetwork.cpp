@@ -2,150 +2,117 @@
 #include <vector>
 #include <cmath>
 #include <queue>
+#include <unordered_set>
 
 using namespace std;
 
-struct Graph 
-{ 
-    int V, E; 
-    vector< pair<int, iPair> > edges; 
-  
-    // Constructor 
-    Graph(int V, int E) 
-    { 
-        this->V = V; 
-        this->E = E; 
-    } 
-  
-    // Utility function to add an edge 
-    void addEdge(int u, int v, int w) 
-    { 
-        edges.push_back({w, {u, v}}); 
-    } 
-  
-    // Function to find MST using Kruskal's 
-    // MST algorithm 
-    int kruskalMST(); 
-}; 
-  
-// To represent Disjoint Sets 
-struct DisjointSets 
-{ 
-    int *parent, *rnk; 
-    int n; 
-  
-    // Constructor. 
-    DisjointSets(int n) 
-    { 
-        // Allocate memory 
-        this->n = n; 
-        parent = new int[n+1]; 
-        rnk = new int[n+1]; 
-  
-        // Initially, all vertices are in 
-        // different sets and have rank 0. 
-        for (int i = 0; i <= n; i++) 
-        { 
-            rnk[i] = 0; 
-  
-            //every element is parent of itself 
-            parent[i] = i; 
-        } 
-    } 
-  
-    // Find the parent of a node 'u' 
-    // Path Compression 
-    int find(int u) 
-    { 
-        /* Make the parent of the nodes in the path 
-        from u--> parent[u] point to parent[u] */
-        if (u != parent[u]) 
-            parent[u] = find(parent[u]); 
-        return parent[u]; 
-    } 
-  
-    // Union by rank 
-    void merge(int x, int y) 
-    { 
-        x = find(x), y = find(y); 
-  
-        /* Make tree with smaller height 
-        a subtree of the other tree */
-        if (rnk[x] > rnk[y]) 
-            parent[y] = x; 
-        else // If rnk[x] <= rnk[y] 
-            parent[x] = y; 
-  
-        if (rnk[x] == rnk[y]) 
-            rnk[y]++; 
-    } 
-}; 
-  
-/* Functions returns weight of the MST*/
-  
-int Graph::kruskalMST() 
-{ 
-    int mst_wt = 0; // Initialize result 
-  
-    // Sort edges in increasing order on basis of cost 
-    sort(edges.begin(), edges.end()); 
-  
-    // Create disjoint sets 
-    DisjointSets ds(V); 
-  
-    // Iterate through all sorted edges 
-    vector< pair<int, iPair> >::iterator it; 
-    for (it=edges.begin(); it!=edges.end(); it++) 
-    { 
-        int u = it->second.first; 
-        int v = it->second.second; 
-  
-        int set_u = ds.find(u); 
-        int set_v = ds.find(v); 
-  
-        // Check if the selected edge is creating 
-        // a cycle or not (Cycle is created if u 
-        // and v belong to same set) 
-        if (set_u != set_v) 
-        { 
-            // Current edge will be in the MST 
-            // so print it 
-            cout << u << " - " << v << endl; 
-  
-            // Update MST weight 
-            mst_wt += it->first; 
-  
-            // Merge two sets 
-            ds.merge(set_u, set_v); 
-        } 
-    } 
-  
-    return mst_wt; 
-} 
+struct node {
+    int x, y, i;
+    node* parent;
+    bool channel = false;
 
-int main() {
-    int s, p;
-    cin >> s;
-    cin >> p;
+    node(int x_, int y_, int i_) {
+        x = x_;
+        y = y_;
+        i = i_;
+    }
+    node(){}
 
-    Graph g();
-
-    vector<vector<int>> nodes(p);
-
-    int x;
-    int y;
-
-    for(int i = 0; i < p; i++) {
-        cin >> x;
-        cin >> y;
-        nodes[i] = {x, y}; 
+    void setParent(node* n) {
+        this->parent = n;
     }
 
-    priority_queue<int, vector<int>, greater<int>> dist;
+    node* getParent() {
+        if(this->parent == this)
+            return this;
+        return this->parent->getParent();
+    }
 
-    for(int i = 0; i < nodes.size()-1; i++) {
-        for(int j = i; j < nodes.size(); j++) {
-            dist[i].push_back(sqrt(pow(nodes[i].x-nodes[j].x,2)+pow(nodes[i].y-nodes[j].y,2)));
+    void addChannel() {
+        this->channel = true;
+    }
+};
+
+struct edge {
+    node* n1;
+    node* n2;
+    double d;
+
+    edge(node* n1_, node* n2_, double d_) {
+        n1 = n1_;
+        n2 = n2_;
+        d = d_;
+    }
+
+    edge(){}
+};
+
+struct leastDist {
+    bool operator()(edge dist1, edge dist2) {
+        return dist1.d > dist2.d;
+    }
+};
+
+struct mostDist {
+    bool operator()(edge dist1, edge dist2) {
+        return dist1.d < dist2.d;
+    }
+};
+
+int main() {
+    
+    int c, s, p;
+    cin >> c;
+    for(int _ = 0; _ < c; _++) {
+
+        cin >> s;
+        cin >> p;
+
+        vector<node*> nodes(p);
+
+        int x;
+        int y;
+
+        for(int i = 0; i < p; i++) {
+            cin >> x;
+            cin >> y;
+            nodes[i] = new node(x, y, i);
+            nodes[i]->setParent(nodes[i]);
         }
+
+        priority_queue<edge, vector<edge>, leastDist> q;
+        vector<edge> mst;
+
+        for(int i = 0; i < nodes.size()-1; i++) {
+            for(int j = i; j < nodes.size(); j++) {
+                if(i != j) {
+                    q.push(edge(nodes[i],nodes[j],sqrt(pow((*nodes[i]).x-(*nodes[j]).x,2)+pow((*nodes[i]).y-(*nodes[j]).y,2))));
+                }
+            }
+        }
+
+        while(!q.empty()) {
+            edge current = q.top();
+            q.pop();
+
+            if(current.n1->getParent() == current.n2->getParent())
+                continue;
+            
+            current.n1->setParent(current.n2->getParent());
+            mst.push_back(current);
+        }
+
+        while(s) {
+            edge current = mst.front();
+            if(!current.n1->channel)
+                current.n1->addChannel();
+            else if(!current.n2->channel)
+                current.n2->addChannel();
+
+            s--;
+        }
+
+        cout << double((int)(mst.front().d*100)) / 100;
+
     }
 }
