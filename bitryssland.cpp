@@ -8,12 +8,12 @@ int main() {
     int n, m;
     cin >> n;
     cin >> m;
-    vector<int> c(n);
+    vector<long long> c(n);
     for(auto &e : c) {
         cin >> e;
     }
 
-    vector<int> s(m);
+    vector<long long> s(m);
     for(auto &e : s) {
         cin >> e;
     }
@@ -22,7 +22,7 @@ int main() {
     // naïve looping:
     /*
     */
-    for(int &e : s) {
+    for(long long e : s) {
         for(int i = c.size()-1; i >= 0; i--) {
             while(e - pow(2, i) >= 0 && c[i] > 0) {
                 e -= pow(2, i);
