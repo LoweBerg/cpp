@@ -1,48 +1,27 @@
 #include <iostream>
 #include <vector>
-#include <queue>
-#include <tuple>
+#include <unordered_set>
 
 using namespace std;
 
-int bfs(vector<vector<int>>* adj, int start, int dist, vector<int>* nuts, vector<int>* startDist) {
+int search(vector<vector<int>>* adj, unordered_set<int>* nuts, vector<bool>* visited, int i) {
+    visited->at(i) = true;
+    int count = 0;
 
-    vector<bool> visited((*adj).size(), false);
-    queue<vector<int>> nodes;
-    nodes.push(vector<int>{start, dist});
-    visited[start] = true;
-
-    while (nodes.size() > 0) {
-        
-        int c = nodes.front().at(0);
-        int d = nodes.front().at(1);
-        nodes.pop();
-
-        for(auto v : (*adj)[c]) {
-            if(!visited[v]) {
-                visited[v] = true;
-                nodes.push(vector<int>{v, d+1});
-            }
-        }
-
-        for(int i = 0; i < (*nuts).size(); i++) {
-            if(c == (*nuts)[i]) {
-                (*nuts).erase((*nuts).begin()+i);
-                return bfs(adj, c, d, nuts, startDist);
-            }
-        }
-
-        if((*nuts).size() == 0) {
-            if((*startDist)[c] != -1)
-                return((*startDist)[c] + d);
-        }
-
-        if(start == 0)
-            (*startDist)[c] = d;
-
+    for(int n : adj->at(i)) {
+        if(!visited->at(n))
+            count += search(adj, nuts, visited, n);        
     }
-    
-    return -1;
+
+    if(count > 0) {
+        count += 2;
+    }
+
+    if(nuts->find(i) != nuts->end() && count == 0) {
+        count = 2;
+    }
+
+    return count;
 }
 
 int main() {
@@ -55,14 +34,14 @@ int main() {
     cin >> nuts_len;
 
     vector<vector<int>> adj(nodes, vector<int>());
-    vector<int> nuts;
+    unordered_set<int> nuts;
     int nut;
     int node1;
     int node2;
 
     for (int i = 0; i < nuts_len; i++) {
         cin >> nut;
-        nuts.push_back(nut - 1);
+        nuts.insert(nut - 1);
     }
 
     for (int i = 1; i < nodes; i++) {
@@ -75,7 +54,8 @@ int main() {
         adj[node2].push_back(node1);
     }
 
-    vector<int> startDist(nodes, -1);
+    vector<bool> visited(nodes);
 
-    cout << bfs(&adj, 0, 0, &nuts, &startDist);
+    int ans = search(&adj, &nuts, &visited, 0);
+    cout << ans - 2;
 }
