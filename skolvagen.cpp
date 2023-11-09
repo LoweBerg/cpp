@@ -1,59 +1,69 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <queue>
+#include <tuple>
 
 using namespace std;
 
-void search(string path, bool north, vector<int>* dist, int cross, int point) {
+struct leastDist {
+    bool operator()(tuple<int, int, int> e1, tuple<int, int, int> e2) {
+        return get<2>(e1) > get<2>(e2);
+    }
+};
 
-    for (int i = point; i < path.length(); i++) {
+int travel(vector<vector<int>> path) {
+    priority_queue<tuple<int, int, int>, vector<tuple<int,int,int>>, leastDist> q;
 
-        if (path[i] == 'B') {
-            cross++;
+    vector<vector<bool>> visited(2, vector<bool>(path[0].size()));
+
+    q.push({0, 0, 0});
+
+    while(!q.empty()) {
+        int cx = get<0>(q.top());
+        int cy = get<1>(q.top());
+        int d = get<2>(q.top());
+        q.pop();
+
+        if(!visited[cx][cy]) {
+            continue;
         }
-        
-        else if (north && path[i] == 'N') {
 
-            cross++;
-            search(path, !north, dist, cross, i + 1);
+        visited[cx][cy] = true;
 
-        } 
+        if(cx == 0 && cy == path[0].size()-1)
+            return d;
 
-        else if (!north && path[i] == 'S') {
-
-            cross++;
-            search(path, !north, dist, cross, i + 1);
-
-        }
-
-        if (north) {
-            if ((*dist)[i] < cross) {
-                return;
-            }
-
-            (*dist)[i] = cross;
+        if(path[cx][cy] == 0 && cy < path[0].size()) {
+            q.push({cx, cy+1, d});
         } else {
-            if ((*dist)[i] < cross + 1) {
-                return;
-            }
-
-            (*dist)[i] = cross + 1;
+            q.push({cx, cy+1, d+1});
+            q.push({!cx, cy, d+1});
         }
     }
+
+    return -1;
 }
 
 int main() {
-    bool north = true;
     string path;
 
     cin >> path;
 
     // path = "SNBNNSB";
 
-    vector<int> dist(path.length(), 10000);
+    vector<vector<int>> dp(2, vector<int>(path.size()+1));
 
-    search(path, north, &dist, 0, 0);
+    for(int i = 1; i < path.size(); i++) {
+        if(path[i] == 'N')
+            dp[0][i] = 1;
+        if(path[i] == 'S')
+            dp[1][i] = 1;
+        else {
+            dp[0][i] = 1;
+            dp[1][i] = 1;
+        }
+    }
     
-    cout << dist.back() << endl;
-
+    cout << travel(dp) << endl;
 }
