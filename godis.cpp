@@ -31,20 +31,31 @@ int res(unordered_map<int, int> m) {
     return res;
 }
 
+int* zip(int n1[], int n2[]) {
+    int n3[21] = {0};
+
+    for(int i = 0; i < 10; i++) {
+        if(n1[i] > n2[20-i])
+            n3[i] = n1[i] - n2[20-i];
+        else {
+            n3[20-i] = n2[20-i] - n1[i];
+        }
+    }
+}
+
 int main() {
     int x;
     cin >> x;
 
-    vector<unordered_map<int, int>> v(x);
+    vector<int[21]> c(x, {0}); 
 
     int k, s, n;
 
     for(int i = 0; i < x; i++) {
         cin >> k;
-        v[i][0] = k;
         while(k--) {
             cin >> s >> n;
-            v[i][s] = n;
+            c[i][10+s] = n;
         }
     }
 
