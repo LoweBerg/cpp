@@ -4,8 +4,7 @@
 
 using namespace std;
 
-vector<tuple<int, int>> dfs(vector<vector<int>>* u, vector<bool>* visited, int current, int parent) {
-    vector<tuple<int, int>> res;
+void dfs(vector<vector<int>>* u, vector<bool>* visited, vector<tuple<int,int>>* extra, int current, int parent) {
     
     visited->at(current) = true;
 
@@ -13,14 +12,13 @@ vector<tuple<int, int>> dfs(vector<vector<int>>* u, vector<bool>* visited, int c
         if(parent == e) {
             continue;
         } else if(visited->at(e)) {
-            res.push_back(tuple(current, e));
+            if(e > current)
+                extra->push_back(tuple(current, e));
         } else {
-            vector<tuple<int, int>> append;
-            append = dfs(u, visited, e, current);
-            res.insert(res.end(), append.begin(), append.end());
+            dfs(u, visited, extra, e, current);
         }
+        cont:;
     }
-    return res;
 }
 
 int main() {
@@ -29,26 +27,24 @@ int main() {
 
     vector<vector<int>> u(n);
 
-    vector<bool> visited(m);
+    vector<bool> visited(n);
 
     int x;
     int y;
 
-    for(int i = 0; i < n; i++) {
+    for(int i = 0; i < m; i++) {
         cin >> x >> y;
         u[x-1].push_back(y-1);
         u[y-1].push_back(x-1);
     }
 
     vector<tuple<int, int>> extra;
-    vector<tuple<int, int>> append;
     vector<int> parents;
 
     for(int i = 0; i < visited.size(); i++) {
         if(!visited[i]) {
             parents.push_back(i);
-            append = dfs(&u, &visited, i, -1);
-            extra.insert(extra.end(), append.begin(), append.end());
+            dfs(&u, &visited, &extra, i, -1);
         }
     }
 
@@ -57,8 +53,8 @@ int main() {
     } else {
         cout << "Ja" << endl;
         cout << parents.size()-1 << endl;
-        for(int i = 1; i < parents.size(); i++) {
-            
+        for(int i = 0; i < parents.size()-1; i++) {
+            cout << get<0>(extra[i])+1 << " " << get<1>(extra[i])+1 << " " << parents[i]+1 << " " << parents[i+1]+1 << endl;
         }
     }
 }
