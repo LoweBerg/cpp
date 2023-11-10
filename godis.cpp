@@ -2,26 +2,30 @@
 #include <vector>
 #include <unordered_map>
 #include <map>
+#include <queue>
 
 using namespace std;
 
-int annihilate(unordered_map<int, int> m1, unordered_map<int, int> m2) {
-    int res = 0;
-
-    for(auto i : m1) {
-        if(i.first == 0)
+unordered_map<int, int> combine(unordered_map<int, int> m1, unordered_map<int, int> m2) {
+    for(auto e : m1) {
+        if(e.first == 0)
             continue;
-        if(m2.find(i.first * -1) != m2.end()) {
-            m1[i.first] = abs(m1[i.first] - m2[i.first*-1]);
-            m2.erase(i.first*-1);
+        if(m2.find(e.first * -1) != m2.end()) {
+            m1[e.first] = abs(m1[e.first] - m2[e.first*-1]);
+            m2.erase(e.first*-1);
         }
-        res += m1[i.first];
     }
 
-    for(auto i : m2) {
-        if(i.first == 0)
-            continue;
-        res += i.second;
+    m1.insert(m2.begin(), m2.end());
+
+    return m1;
+}
+
+int res(unordered_map<int, int> m) {
+    int res = 0;
+
+    for(auto e : m) {
+        res += e.second;
     }
 
     return res;
@@ -43,11 +47,7 @@ int main() {
             v[i][s] = n;
         }
     }
-    for(int i = 0; i < x; i++) {
-        for(int j = 0; j < x; j++) {
-            if(i == j) 
-                continue;
-            cout << annihilate(v[i], v[j]) << endl;
-        }
-    }
+
+    vector<int> max(x+1);
+
 }
