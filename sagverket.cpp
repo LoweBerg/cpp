@@ -3,8 +3,33 @@
 
 using namespace std;
 
+long long n, t;
+
+void guess() {
+    int nums[n] = {0};
+    cout << "? " << 1 << endl << flush;
+    int d1[n] = {0};
+    for(int &e : d1) {
+        cin >> e;
+        nums[n-1] += e;
+    }
+
+    nums[n-1]++;
+
+    int g = 2;
+    int d2[n] = {0};
+
+    cout << "? " << g << endl << flush;
+
+    for(int &e : d2) {
+        cin >> e;
+    }
+
+
+    
+}
+
 int main() {
-    long long n, t;
     cin >> n >> t;
 
     if(t == 1) {
