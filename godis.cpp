@@ -60,5 +60,4 @@ int main() {
     }
 
     vector<int> max(x+1);
-
 }
