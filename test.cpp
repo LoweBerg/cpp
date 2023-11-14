@@ -1,11 +1,23 @@
 #include <iostream>
-#include <tuple>
+
+using namespace std;
+
+int* foo(int n[]) {
+    n[0] = 1;
+
+    return n;
+}
 
 int main() {
-    std::tuple<int, int> t1 = std::tuple(1, 4);
-    std::tuple<int, int> t2 = t1;
-    t1 = std::tuple(5, 5);
+    int n[3] = {0, 0, 0};
+    for(int e : n) {
+        cout << e << " ";
+    }
+    cout << endl;
 
-    std::cout << std::get<0>(t1) << std::get<1>(t1) << std::endl;
-    std::cout << std::get<0>(t2) << std::get<1>(t2) << std::endl;
+    foo(n);
+
+    for(int e : n) {
+        cout << e << " ";
+    }
 }
