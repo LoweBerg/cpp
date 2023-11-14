@@ -1,76 +1,61 @@
 #include <iostream>
-#include <unordered_map>
+#define ll long long
 
 using namespace std;
 
-long long n, t;
 
-void guess() {
-    long long nums[n] = {0};
-    long long guess = 1;
-    unordered_map<long long, long long> m1, m2;
+int main() {
+    ll n, t;
+    cin >> n >> t;
+    ll nums[n] = {0};
+    ll guess = 1;
     cout << "? " << guess << endl;
-    long long d1[n] = {0};
-    int e;
-    for(int i = 0; i < n; i++) {
+    ll d1[n] = {0};
+    for(ll &e : d1) {
         cin >> e;
         nums[n-1] += e;
-        if(m1.find(e) != m1.end()) {
-            m1[e]++;
-        } else {
-            m1[e] = 1;
-        }
+    }
+    nums[n-1]++;
+    guess = nums[n-1];
+    nums[0] = nums[n-1];
+
+    if(t == 1) {
+        cout << "! " << nums[0] << endl;
+        return 0;
     }
 
-    nums[n-1]++;
+    cout << "? " << guess << endl;
 
-    for(long long i = 2; i <= n; i++) {
-        guess = nums[n-i+1] - 1;
-        long long e;
+    for(ll &e : d1) {
+        cin >> e;
+        nums[0] -= e;
+    }
+
+    for(ll i = n-1; i > 1; i--) {
+        guess = nums[i] - 1;
+        ll d2[n] = {0};
 
         cout << "? " << guess << endl;
 
-        m2.clear();
-        for(int i = 0; i < n; i++) {
+        for(ll &e : d2) {
             cin >> e;
-            if(m2.find(e) != m2.end()) {
-                m2[e]++;
-            } else {
-                m2[e] = 1;
-            }
         }
 
-        long long p = 0, n1 = 0, n2 = 1;
+        ll p = n, diff = 0;
 
-        for(auto e : m2) {
-            if(m1.find(e.first) == m1.end()) {
-                
-            }
-        }
-        
-
-        p++;
-
-        while(p < n) {
-            if(m1.find(m2[p]) == m1.end()) {
-                n2 = m2[p];
+        while(p--) {
+            if(d1[p] != d2[p]) {
+                diff = d2[p];
                 break;
             }
-            p++;
         }
 
-        nums[n-i] = nums[n-i+1] - (n1 + n2);
+        nums[i-1] = guess - diff;
     }
 
     cout << "! ";
-    for(long long e : nums) {
+    for(ll e : nums) {
         cout << e << " ";
     }
     cout << endl;
-}
-
-int main() {
-    cin >> n >> t;
-
-    guess();
 }
