@@ -2,22 +2,13 @@
 
 using namespace std;
 
-int* foo(int n[]) {
-    n[0] = 1;
 
-    return n;
-}
 
 int main() {
-    int n[3] = {0, 0, 0};
-    for(int e : n) {
-        cout << e << " ";
-    }
-    cout << endl;
+    int i = 5;
 
-    foo(n);
-
-    for(int e : n) {
-        cout << e << " ";
+    while(i^0) {
+        cout << i % 2 << " ";
+        i >>= 1;
     }
 }
