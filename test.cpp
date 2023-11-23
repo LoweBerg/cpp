@@ -2,13 +2,9 @@
 
 using namespace std;
 
-
-
 int main() {
-    int i = 5;
+    int x = 1000;
+    long long y = 10E5;
 
-    while(i^0) {
-        cout << i % 2 << " ";
-        i >>= 1;
-    }
+    cout << x*y;
 }
