@@ -1,58 +1,133 @@
 #include <iostream>
 #include <vector>
-#include <unordered_set>
-#include <unordered_map>
+#include <queue>
+#include <algorithm>
 
-#define ll long long
+#define uint unsigned int
 
 using namespace std;
 
-bool dfs(vector<vector<ll>>* adj, ll current, ll* target) {
-    if(current == *(target)) {
-        return true;
-    }
+const uint big = 10E5;
 
-    for(ll e : adj->at(current)) {
-        if(dfs(adj, e, target)) {
-            return true;
+struct less_depth{
+    bool operator()(uint n1, uint n2, vector<uint>* depth) {
+        return depth->at(n1) > depth->at(n2);
+    }
+};
+
+void topSort(vector<vector<uint>>* adj, deque<uint>* topOrder, vector<bool>* visited, uint current) {
+    for(uint e : adj->at(current)) {
+        if(!visited->at(e)) {
+            visited->at(e) = true;
+            topSort(adj, topOrder, visited, e);
         }
     }
+    topOrder->push_back(current);
+}
 
-    return false;
+void make_path(vector<vector<uint>>* adj, vector<bool>* visited, vector<pair<uint, uint>>* path_ids, uint current, uint* current_id, uint current_depth) {
+    visited->at(current) = true;
+    path_ids->at(current) = {*current_id, current_depth};
+    for(uint e : adj->at(current)) {
+        if(!visited->at(e)) {
+            make_path(adj, visited, path_ids, e, current_id, current_depth+1);
+            break;
+        }   
+    }
+}
+
+
+bool find(vector<vector<uint>>* adj_out, vector<vector<uint>>* adj_in, vector<uint>* depth, uint n1, uint n2) {
+    // n1 is the home and n2 is the workplace
+    
+    while(n1 != n2) {
+        if(depth->at(n1) >= depth->at(n2)) {
+            // home needs to travel to outgoing edges with lower depth to go up, if not possible then return false
+            for(auto e : adj_out->at(n1)) {
+                if(depth->at(e) < depth->at(n1)) {
+                    n1 = e;
+                    goto cont;
+                }
+            }
+            goto false_return;
+        }
+        if(depth->at(n2) > depth->at(n1)) {
+            // workplace needs to travel to incoming edges with lower depth, if not possible then return false
+            for(auto e : adj_in->at(n2)) {
+                if(depth->at(e) < depth->at(n2)) {
+                    n2 = e;
+                    goto cont;
+                }
+            }
+            goto false_return;
+        }
+        cont:;
+    }
+
+
+    return true;
+    false_return:
+        return false;
 }
 
 int main() {
-    ll n;
+    uint n;
     cin >> n;
 
-    vector<vector<ll>> m(n);
-    ll a, b;
+    vector<bool> batman(n);
+
+    vector<vector<uint>> adj(n+1);
+    uint a, b;
     for(int i = 0; i < n-1; i++) {
         cin >> a >> b;
-        m[a-1].push_back(b-1);
+        
+        batman[b-1] = true;
+        adj[a-1].push_back(b-1);
     }
 
-    ll q;
+    for(bool b : batman) {
+        if(!b) {
+            adj.back().push_back(b);
+        }
+    }
+    
+    deque<uint> topOrder;
+    vector<bool> visited(n);
+    for(uint e : adj.back()) {
+        topSort(&adj, &topOrder, &visited, e); // O(n)
+    }
+
+    vector<pair<uint, uint>> path_ids(n);
+    visited = vector<bool>(n);
+    uint id = 0;
+
+    for(uint e : topOrder) {
+        if(!visited[e]) {
+            make_path(&adj, &visited, &path_ids, e, &id, 0);
+            id++;
+        }
+    }
+
+    
+
+    
+    uint q;
     cin >> q;
 
-    ll h, w;
-    unordered_map<ll, ll> resident_map;
-    vector<ll> residents(q);
-    vector<ll> workplaces(q);
+    uint h, w;
+    uint res[q];
+    uint work[q];
 
-    vector<vector<bool>> dp(q, vector<bool>(q));
-
-    for(ll i = 0; i < q; i++) {
+    for(uint i = 0; i < q; i++) {
         cin >> h >> w;
-        residents[i] = h-1;
-        workplaces[i] = w-1;
+        res[i] = h-1;
+        work[i] = w-1;
     }
 
-    for(ll i = 0; i < residents.size() ; i++) {
-        if(dfs(&m, residents[i], &workplaces[i])) {
+    for(uint i = 0; i < q; i++) {
+        if(find(&adj_out, &adj_in, &depth, res[i], work[i]))
             cout << "ja" << "\n";
-        } else {
+        else 
             cout << "nej" << "\n";
-        }
     }
 }
