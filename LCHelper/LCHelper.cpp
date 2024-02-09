@@ -86,8 +86,6 @@ bool load(const string &filename) {
 }
 
 void solve(int target) {
-    vector<bool> active(items.size(), true);
-
     vector<bool> best;
     int best_val;
     
@@ -101,7 +99,7 @@ void solve(int target) {
 
     queue<state> q;
 
-    q.push(state(active, sum, 0));
+    q.push(state(vector<bool>(items.size(), true), sum, 0));
 
     while(!q.empty()) {
         state current = q.front();
@@ -136,19 +134,20 @@ void solve(int target) {
         cout << "Total value of sale will exceed the target value by " << best_val - target << " credits" << endl;
     }
 
-    cout << "--- Values to sell ---" << endl;
+    cout << "--- Items to sell ---" << endl;
     for(int i = 0; i < items.size(); i++) {
-        if(active[i])
-            cout << items[i].val << endl;
+        if(best[i])
+            cout << names[items[i].id] << " - " << items[i].val << endl;
     }
 
-    cout << "--- Values to keep ---" << endl;
+    cout << "--- Items to keep ---" << endl;
     for(int i = 0; i < items.size(); i++) {
-        if(!active[i])
-            cout << items[i].val << endl;
+        if(!best[i])
+            cout << names[items[i].id] << " - " << items[i].val << endl;
     }
     
     cout << "Value of sale: " << best_val << endl;
+    cout << "------------------------" << endl;
 }
 
 string read() {
@@ -166,13 +165,58 @@ string read() {
 int main() {
 
     day = 1;
+    lifetime_sum = 0;
+
+    cout << "LCHelper by Lowe Berg \nType \"help\" to receive a list of commands" << endl; 
 
     start:
 
     string input = read();
 
-    for(char &c : input) {
-        tolower(c);
+    if(input == "avg") {
+        double sum = 0;
+
+        for(item &e : items) {
+            sum += e.val;
+        }
+
+        cout << "Current average per day: " << sum/day << endl;
+    }
+
+    if(input == "clear") {
+        cout << "Are you sure you want to clear the current inventory?" << endl << "y/n: ";
+        input = read();
+        if(input == "y") {
+            items.clear();
+            cout << "Current inventory was successfully cleared" << endl;
+        } else {
+            cout << "Action was successfully canceled" << endl;
+        }
+    }
+
+    if(input == "delete") {
+        string filename = read();
+        filesystem::path filepath(savePath + filename + ".txt");
+
+        if(filesystem::exists(filepath)) {
+            cout << "Are you sure you want to delete the save?" << endl << "y/n: ";
+            input = read();
+            
+            if(input == "y") {
+                filesystem::remove(filepath);
+                cout << "Save " << filename << " was successfully deleted" << endl;
+            } else {
+                cout << "Action was successfully canceled" << endl;
+            }
+        } else {
+            cout << "Savefile named " << filename << " not found" << endl;
+        }
+    }
+
+    if(input == "end") {
+        cout << "Day " << day << " ended" << endl;
+
+        day += 1;
     }
 
     if(input == "exit") {
@@ -186,14 +230,35 @@ int main() {
         }
     }
 
-    if(input == "push") {
+    if(input == "help") {
+        cout << "--- Commands for the LCHelper program ---" << endl;
+        cout << "avg - Displays the average value collected per day" << endl;
+        cout << "clear - Removes all items from the inventory" << endl;
+        cout << "delete [file name] - Deletes a save file" << endl;
+        cout << "end - Increments the day counter" << endl;
+        cout << "exit - Closes the program" << endl;
+        cout << "help - Displays this text" << endl;
+        cout << "load [file name] - Loads a save file from the memory" << endl;
+        cout << "pop [item id] [item value] - Removes an item from the inventory" << endl;
+        cout << "push [item id] [item value] - Adds an item to the inventory" << endl;
+        cout << "reset - Resets the inventory and day counter" << endl;
+        cout << "save [file name] - Saves the current game to memory" << endl;
+        cout << "solve [qouta amount] - Displays which items to keep or sell from the inventory to get as close to the quota as possible without subceeding it" << endl;
+        cout << "sum - Displays the total value of the inventory and the lifetime sum of the run" << endl;
+        cout << "view" << endl << "       day - Displays the current day number" << endl;
+        cout << "       inventory - Displays all items in the inventory" << endl;
+        cout << "       saves - Displays all save files in memory" << endl;
+        cout << "------------------------" << endl;
+    }
 
-        item item;
+    if(input == "load") {
+        string filename = read();
 
-        cin >> item.id >> item.val;
-
-        items.push_back(item);
-        cout << "Added " << names[item.id] << " worth " << item.val << endl;
+        if(load(filename + ".txt")) {
+            cout << "Game loaded from file " << '\"' << filename << '\"' << endl;
+        } else {
+            cout << "Savefile named " << filename << " not found" << endl; 
+        }
     }
 
     if(input == "pop") {
@@ -217,74 +282,16 @@ int main() {
         }
     }
 
-    if(input == "sum") {
-        int sum = 0;
+    if(input == "push") {
 
-        for(item &e : items) {
-            sum += e.val;
-        }
+        item item;
 
-        cout << "Current value of inventory: " << sum << endl;
-    }
+        cin >> item.id >> item.val;
 
-    if(input == "end") {
-        cout << "Day " << day << " ended" << endl;
-
-        day += 1;
-    }
-
-    if(input == "avg") {
-        double sum = 0;
-
-        for(item &e : items) {
-            sum += e.val;
-        }
-
-        cout << "Current average per day: " << sum/day << endl;
-    }
-
-    if(input == "view") {
-        input = read();
-        if(input == "inventory") {
-            if(items.size() == 0) {
-                cout << "Ship is currently empty" << endl;
-                goto start;
-            }
-
-            cout << "Current items on ship:" << endl;
-
-            for(auto e : items) {
-                cout << names[e.id] << " - " << e.val << endl;
-            }
-        } else if(input == "day") {
-            cout << "Current day: " << day << endl;
-        } else if(input == "saves") {
-            cout << "Save files found: " << endl;
-            for(auto entry : filesystem::directory_iterator(savePath)) {
-            
-            }
-        }
-    }
-
-    if(input == "save") {
-        string filename = read();
-
-        if(save(items, day, filename + ".txt")) {
-            cout << "Game saved to file " << '\"' << filename << '\"' << endl;
-        } else {
-            cout << "There was an error saving your game" << endl;
-        }
-    }
-
-    if(input == "load") {
-        string filename = read();
-
-        if(load(filename + ".txt")) {
-            cout << "Game loaded from file " << '\"' << filename << '\"' << endl;
-        } else {
-            cout << "Savefile named " << filename << " not found" << endl; 
-        }
-
+        items.push_back(item);
+        lifetime_sum += item.val;
+        
+        cout << "Added " << names[item.id] << " worth " << item.val << endl;
     }
 
     if(input == "reset") {
@@ -300,14 +307,61 @@ int main() {
         }
     }
 
-    if(input == "clear") {
-        cout << "Are you sure you want to clear the current inventory?" << endl << "y/n: ";
-        input = read();
-        if(input == "y") {
-            items.clear();
-            cout << "Current inventory was successfully cleared" << endl;
+    if(input == "save") {
+        string filename = read();
+
+        if(save(items, day, filename + ".txt")) {
+            cout << "Game saved to file " << '\"' << filename << '\"' << endl;
         } else {
-            cout << "Action was successfully canceled" << endl;
+            cout << "There was an error saving your game" << endl;
+        }
+    }
+
+    if(input == "solve") {
+        int target;
+        cin >> target;
+        solve(target);
+    }
+
+    if(input == "sum") {
+        int sum = 0;
+
+        for(item &e : items) {
+            sum += e.val;
+        }
+
+        cout << "Current value of inventory: " << sum << endl;
+        cout << "Lifetime sum: " << lifetime_sum << endl;
+    }
+
+    if(input == "view") {
+        input = read();
+
+        if(input == "day") {
+            cout << "Current day: " << day << endl;
+        }
+
+        if(input == "inventory") {
+            if(items.size() == 0) {
+                cout << "Ship is currently empty" << endl;
+                goto start;
+            }
+
+            cout << "--- Current items on ship ---" << endl;
+            cout << "item - value" << endl;
+            for(auto e : items) {
+                cout << names[e.id] << " - " << e.val << endl;
+            }
+
+            cout << "------------------------" << endl;
+        } 
+        
+        if(input == "saves") {
+            cout << "--- Save files found ---" << endl;
+            for(filesystem::path entry : filesystem::directory_iterator(savePath)) {
+                cout << entry.stem() << endl;
+            }
+            cout << "------------------------" << endl;
         }
     }
 
