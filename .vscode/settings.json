@@ -2,7 +2,8 @@
     "files.associations": {
         "vector": "cpp",
         "tuple": "cpp",
-        "hash_map": "cpp"
+        "hash_map": "cpp",
+        "iostream": "cpp"
     },
     "C_Cpp.default.compilerPath": "C:\\msys64\\mingw64\\bin\\g++.exe"
 }

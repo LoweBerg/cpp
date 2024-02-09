@@ -1,4 +1,5 @@
 #include <bits/stdc++.h>
+#include <filesystem>
 
 using namespace std;
 
@@ -20,7 +21,11 @@ struct state{
     }
 };
 
+const string savePath = "saves/";
+
 vector<item> items;
+int day;
+int lifetime_sum;
 
 const vector<string> names = {"Airhorn", "Apparatice", "Bee Hive", "Big Bolt", "Bottles", "Brass Bell", "Candy", "Cash Register", "Chemical Jug", "Clown Horn", "Coffee Mug", "Comedy", 
                             "Cookie Mold Pan", "Double-Barrel", "Dust Pan", "Egg Beater", "Fancy Lamp", "Flask", "Gift Box", "Gold Bar", "Golden Cup", "Hair Brush", "Hairdryer", "Homemade Flashbang", 
@@ -29,7 +34,7 @@ const vector<string> names = {"Airhorn", "Apparatice", "Bee Hive", "Big Bolt", "
                             "V-Type Engine", "Whoopie-Cushion", "Yield Sign"};
 
 ostream& operator<<(ostream &out, const item &i) {
-    out << i.id << ' ' << i.val;
+    out << i.id << " " << i.val;
     return out;
 }
 
@@ -38,38 +43,46 @@ istream& operator>>(istream &in, item &i) {
     return in;
 }
 
-void save(const vector<item> &database, const int &day, const string &filename) {
-    ofstream out(filename);
+bool save(const vector<item> &database, const int &day, const string &filename) {
+    ofstream out(savePath + filename);
     if(out.is_open()) {
-        out << day << '\n';
+        out << day << " "<< lifetime_sum << '\n';
         for(const item &i : database) {
-            out << i.id << " " << i.val << '\n';
+            out << i << '\n';
         }
+        return true;
     } else
-        cout << "error opening file" << endl;
+        return false;
 }
 
-vector<item> load(const string &filename, int* day) {
+bool load(const string &filename) {
 
     vector<item> database;
 
-    ifstream in(filename);
-    string line;
+    ifstream in(savePath + filename);
 
-    item i;
+    if(in.is_open()) {
+        string line;
 
-    getline(in, line);
-    istringstream iss(line);
+        item i;
 
-    iss >> *day;
-
-    while(getline(in, line)) {
+        getline(in, line);
         istringstream iss(line);
-        iss >> i;
-        database.push_back(i);
-    }
 
-    return database;
+        iss >> day >> lifetime_sum;
+
+        while(getline(in, line)) {
+            istringstream iss(line);
+            iss >> i;
+            database.push_back(i);
+        }
+
+        items = database;
+
+        return true;
+    } else {
+        return false;
+    }
 }
 
 void solve(int target) {
@@ -152,7 +165,7 @@ string read() {
 
 int main() {
 
-    int day = 1;
+    day = 1;
 
     start:
 
@@ -163,7 +176,14 @@ int main() {
     }
 
     if(input == "exit") {
-        return 0;
+        cout << "Are you sure you want to exit the program?" << endl << "y/n: ";
+        input = read();
+        if(input == "y") {
+            cout << "Exiting program..." << endl;
+            return 0;
+        } else {
+            cout << "Action was successfully canceled" << endl;
+        }
     }
 
     if(input == "push") {
@@ -224,23 +244,71 @@ int main() {
     }
 
     if(input == "view") {
-        cout << "Current items on ship:" << endl;
+        input = read();
+        if(input == "inventory") {
+            if(items.size() == 0) {
+                cout << "Ship is currently empty" << endl;
+                goto start;
+            }
 
-        for(auto e : items) {
-            cout << names[e.id] << " - " << e.val << endl;
+            cout << "Current items on ship:" << endl;
+
+            for(auto e : items) {
+                cout << names[e.id] << " - " << e.val << endl;
+            }
+        } else if(input == "day") {
+            cout << "Current day: " << day << endl;
+        } else if(input == "saves") {
+            cout << "Save files found: " << endl;
+            for(auto entry : filesystem::directory_iterator(savePath)) {
+            
+            }
         }
     }
 
     if(input == "save") {
         string filename = read();
 
-        save(items, day, filename + ".txt");
-
-        cout << "Game saved to file " << "\"" << filename << "\"" << endl;
+        if(save(items, day, filename + ".txt")) {
+            cout << "Game saved to file " << '\"' << filename << '\"' << endl;
+        } else {
+            cout << "There was an error saving your game" << endl;
+        }
     }
 
     if(input == "load") {
+        string filename = read();
 
+        if(load(filename + ".txt")) {
+            cout << "Game loaded from file " << '\"' << filename << '\"' << endl;
+        } else {
+            cout << "Savefile named " << filename << " not found" << endl; 
+        }
+
+    }
+
+    if(input == "reset") {
+        cout << "Are you sure you want to reset?" << endl << "y/n: ";
+        input = read();
+        if(input == "y") {
+            day = 1;
+            items.clear();
+
+            cout << "Game was successfully reset" << endl;
+        } else {
+            cout << "Action was successfully canceled" << endl;
+        }
+    }
+
+    if(input == "clear") {
+        cout << "Are you sure you want to clear the current inventory?" << endl << "y/n: ";
+        input = read();
+        if(input == "y") {
+            items.clear();
+            cout << "Current inventory was successfully cleared" << endl;
+        } else {
+            cout << "Action was successfully canceled" << endl;
+        }
     }
 
     goto start;
