@@ -1,5 +1,8 @@
-#include <bits/stdc++.h>
+#include <vector>
 #include <filesystem>
+#include <string>
+#include <iostream>
+#include <fstream>
 
 using namespace std;
 
@@ -8,21 +11,16 @@ struct item {
     int val;
     item() = default;
     item(int id, int val) : id(id), val(val) {}
-};
 
-struct state{
-    vector<bool> active;
-    int value;
-    int index;
-    state(vector<bool> _active, int _value, int _index) {
-        active = _active;
-        value = _value;
-        index = _index;
+    bool operator==(const item i) {
+        return id == i.id && val == i.val;
     }
 };
 
+// constants
 const string savePath = "saves/";
 
+// variables
 vector<item> items;
 int day;
 int lifetime_sum;
@@ -85,69 +83,35 @@ bool load(const string &filename) {
     }
 }
 
-void solve(int target) {
-    vector<bool> best;
-    int best_val;
-    
+vector<bool> solve(int target) {
     int sum = 0;
 
     for(item &e : items) {
         sum += e.val;
     }
 
-    best_val = sum;
+    vector<int> dp(sum + 1);
+    dp[0] = -1;
 
-    queue<state> q;
-
-    q.push(state(vector<bool>(items.size(), true), sum, 0));
-
-    while(!q.empty()) {
-        state current = q.front();
-        q.pop();
-
-        if(current.value < target)
-            continue;
-
-        if(current.value < best_val) {
-            best_val = current.value;
-            best = current.active;
-        }
-
-        if(current.value == target) {
-            best_val = current.value;
-            best = current.active;
-            break;
-        }
-
-        q.push(state(current.active, current.value, current.index + 1));
-        current.active[current.index] = false;
-        current.value -= items[current.index].val;
-        q.push(state(current.active, current.value, current.index + 1));
-    }
-
-    if(best_val < target) {
-        cout << "Value on ship is insufficient for the chosen target" << endl;
-        return;
-    }
-
-    if(best_val > target) {
-        cout << "Total value of sale will exceed the target value by " << best_val - target << " credits" << endl;
-    }
-
-    cout << "--- Items to sell ---" << endl;
     for(int i = 0; i < items.size(); i++) {
-        if(best[i])
-            cout << names[items[i].id] << " - " << items[i].val << endl;
+        for(int j = dp.size(); j >= 0; j--) {
+            if(j >= items[i].val && abs(dp[j - items[i].val]) && !dp[j]) {
+                dp[j] = i + 1;
+            }
+        }
     }
 
-    cout << "--- Items to keep ---" << endl;
-    for(int i = 0; i < items.size(); i++) {
-        if(!best[i])
-            cout << names[items[i].id] << " - " << items[i].val << endl;
+    int i;
+    for(i = target; !dp[i]; i++);
+
+    vector<bool> output(items.size());
+
+    while(dp[i] != -1) {
+        output[dp[i] - 1] = true;
+        i -= items[dp[i] - 1].val;
     }
     
-    cout << "Value of sale: " << best_val << endl;
-    cout << "------------------------" << endl;
+    return output;
 }
 
 string read() {
@@ -174,16 +138,10 @@ int main() {
     string input = read();
 
     if(input == "avg") {
-        double sum = 0;
-
-        for(item &e : items) {
-            sum += e.val;
-        }
-
-        cout << "Current average per day: " << sum/day << endl;
+        cout << "Current average per day: " << lifetime_sum/day << endl;
     }
 
-    if(input == "clear") {
+    else if(input == "clear") {
         cout << "Are you sure you want to clear the current inventory?" << endl << "y/n: ";
         input = read();
         if(input == "y") {
@@ -194,7 +152,7 @@ int main() {
         }
     }
 
-    if(input == "delete") {
+    else if(input == "delete") {
         string filename = read();
         filesystem::path filepath(savePath + filename + ".txt");
 
@@ -213,13 +171,13 @@ int main() {
         }
     }
 
-    if(input == "end") {
+    else if(input == "end") {
         cout << "Day " << day << " ended" << endl;
 
         day += 1;
     }
 
-    if(input == "exit") {
+    else if(input == "exit") {
         cout << "Are you sure you want to exit the program?" << endl << "y/n: ";
         input = read();
         if(input == "y") {
@@ -230,7 +188,7 @@ int main() {
         }
     }
 
-    if(input == "help") {
+    else if(input == "help") {
         cout << "--- Commands for the LCHelper program ---" << endl;
         cout << "avg - Displays the average value collected per day" << endl;
         cout << "clear - Removes all items from the inventory" << endl;
@@ -251,7 +209,7 @@ int main() {
         cout << "------------------------" << endl;
     }
 
-    if(input == "load") {
+    else if(input == "load") {
         string filename = read();
 
         if(load(filename + ".txt")) {
@@ -261,7 +219,7 @@ int main() {
         }
     }
 
-    if(input == "pop") {
+    else if(input == "pop") {
 
         int id;
         int value;
@@ -282,19 +240,18 @@ int main() {
         }
     }
 
-    if(input == "push") {
+    else if(input == "push") {
 
         item item;
 
         cin >> item.id >> item.val;
 
         items.push_back(item);
-        lifetime_sum += item.val;
         
         cout << "Added " << names[item.id] << " worth " << item.val << endl;
     }
 
-    if(input == "reset") {
+    else if(input == "reset") {
         cout << "Are you sure you want to reset?" << endl << "y/n: ";
         input = read();
         if(input == "y") {
@@ -307,7 +264,7 @@ int main() {
         }
     }
 
-    if(input == "save") {
+    else if(input == "save") {
         string filename = read();
 
         if(save(items, day, filename + ".txt")) {
@@ -317,13 +274,66 @@ int main() {
         }
     }
 
-    if(input == "solve") {
+    else if(input == "solve") {
         int target;
         cin >> target;
-        solve(target);
+        vector<bool> output = solve(target);
+
+        cout << "--- Items to Sell ---" << endl;
+        cout << "Id - Name - Value" << endl;
+        for(int i = 0; i < items.size(); i++) {
+            if(output[i])
+                cout << items[i].id << " - " << names[items[i].id] << " - " << items[i].val << endl;
+        }
+
+        cout << "--- Items to Keep ---" << endl;
+        cout << "Id - Name - Value" << endl;
+        for(int i = 0; i < items.size(); i++) {
+            if(!output[i])
+                cout << items[i].id << " - " << names[items[i].id] << " - " << items[i].val << endl;
+        }
+
+        int sum = 0;
+
+        for(int i = 0; i < items.size(); i++) {
+            if(output[i])
+                sum += items[i].val;
+        }
+
+        cout << "Total Value of Sale: " << sum << endl;
+
+        cout << "Sell Items?" << endl << "y/n: ";
+        input = read();
+        if(input == "y") {
+            vector<item> toSell;
+            for(int i = 0; i < items.size(); i++) {
+                if(output[i])
+                    toSell.push_back(items[i]);
+            }
+
+            int newSize = items.size();
+
+            while(!toSell.empty()) {
+                for(int i = 0; i < items.size(); i++) {
+                    if(toSell.back() == items[i]) {
+                        swap(items[i], items[--newSize]);
+                        i = items.size();
+                    }
+                }
+                toSell.pop_back();
+            }
+
+            items.resize(newSize);
+            lifetime_sum += sum;
+            cout << "Items were successfully sold" << endl;
+        }
+
+        else {
+            cout << "Command canceled" << endl;
+        }
     }
 
-    if(input == "sum") {
+    else if(input == "sum") {
         int sum = 0;
 
         for(item &e : items) {
@@ -334,7 +344,7 @@ int main() {
         cout << "Lifetime sum: " << lifetime_sum << endl;
     }
 
-    if(input == "view") {
+    else if(input == "view") {
         input = read();
 
         if(input == "day") {
@@ -348,9 +358,9 @@ int main() {
             }
 
             cout << "--- Current items on ship ---" << endl;
-            cout << "item - value" << endl;
+            cout << "Id - Item - Value" << endl;
             for(auto e : items) {
-                cout << names[e.id] << " - " << e.val << endl;
+                cout << e.id << " - " << names[e.id] << " - " << e.val << endl;
             }
 
             cout << "------------------------" << endl;
@@ -363,6 +373,10 @@ int main() {
             }
             cout << "------------------------" << endl;
         }
+    }
+
+    else {
+        cout << "Command \"" << input << "\" is not valid" << endl;
     }
 
     goto start;
