@@ -3,6 +3,7 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <algorithm>
 
 using namespace std;
 
@@ -15,6 +16,11 @@ struct item {
     bool operator==(const item i) {
         return id == i.id && val == i.val;
     }
+
+    bool operator<(const item &i) {
+        return (id == i.id) ? val < i.val : id < i.id;
+    }
+    
 };
 
 // constants
@@ -114,16 +120,27 @@ vector<bool> solve(int target) {
     return output;
 }
 
-string read() {
+vector<string> read() {
     string input;
 
-    cin >> input;
+    getline(cin, input);
 
     for(char &c : input) {
         tolower(c);
     }
 
-    return input;
+    vector<string> output;
+
+    int start = 0;
+    int stop = 0;
+
+    while(stop != -1) {
+        stop = input.find(' ', start);
+        output.push_back(input.substr(start, stop - start));
+        start = stop + 1;
+    }
+
+    return output;
 }
 
 int main() {
@@ -135,16 +152,16 @@ int main() {
 
     start:
 
-    string input = read();
+    vector<string> input = read();
 
-    if(input == "avg") {
+    if(input[0] == "avg") {
         cout << "Current average per day: " << lifetime_sum/day << endl;
     }
 
-    else if(input == "clear") {
+    else if(input[0] == "clear") {
         cout << "Are you sure you want to clear the current inventory?" << endl << "y/n: ";
         input = read();
-        if(input == "y") {
+        if(input[0] == "y") {
             items.clear();
             cout << "Current inventory was successfully cleared" << endl;
         } else {
@@ -152,15 +169,15 @@ int main() {
         }
     }
 
-    else if(input == "delete") {
-        string filename = read();
+    else if(input[0] == "delete") {
+        string filename = input[1];
         filesystem::path filepath(savePath + filename + ".txt");
 
         if(filesystem::exists(filepath)) {
             cout << "Are you sure you want to delete the save?" << endl << "y/n: ";
             input = read();
             
-            if(input == "y") {
+            if(input[0] == "y") {
                 filesystem::remove(filepath);
                 cout << "Save " << filename << " was successfully deleted" << endl;
             } else {
@@ -171,16 +188,16 @@ int main() {
         }
     }
 
-    else if(input == "end") {
+    else if(input[0] == "end") {
         cout << "Day " << day << " ended" << endl;
 
         day += 1;
     }
 
-    else if(input == "exit") {
+    else if(input[0] == "exit") {
         cout << "Are you sure you want to exit the program?" << endl << "y/n: ";
         input = read();
-        if(input == "y") {
+        if(input[0] == "y") {
             cout << "Exiting program..." << endl;
             return 0;
         } else {
@@ -188,7 +205,7 @@ int main() {
         }
     }
 
-    else if(input == "help") {
+    else if(input[0] == "help") {
         cout << "--- Commands for the LCHelper program ---" << endl;
         cout << "avg - Displays the average value collected per day" << endl;
         cout << "clear - Removes all items from the inventory" << endl;
@@ -209,8 +226,8 @@ int main() {
         cout << "------------------------" << endl;
     }
 
-    else if(input == "load") {
-        string filename = read();
+    else if(input[0] == "load") {
+        string filename = input[1];
 
         if(load(filename + ".txt")) {
             cout << "Game loaded from file " << '\"' << filename << '\"' << endl;
@@ -219,12 +236,10 @@ int main() {
         }
     }
 
-    else if(input == "pop") {
+    else if(input[0] == "pop") {
 
-        int id;
-        int value;
-
-        cin >> id >> value;
+        int id = stoi(input[1]);
+        int value = stoi(input[2]);
 
         int i;
         for(i = 0; i < items.size() && items[i].id != id && items[i].val != value; i++);
@@ -240,7 +255,7 @@ int main() {
         }
     }
 
-    else if(input == "push") {
+    else if(input[0] == "push") {
 
         item item;
 
@@ -251,10 +266,10 @@ int main() {
         cout << "Added " << names[item.id] << " worth " << item.val << endl;
     }
 
-    else if(input == "reset") {
+    else if(input[0] == "reset") {
         cout << "Are you sure you want to reset?" << endl << "y/n: ";
         input = read();
-        if(input == "y") {
+        if(input[0] == "y") {
             day = 1;
             items.clear();
 
@@ -264,8 +279,8 @@ int main() {
         }
     }
 
-    else if(input == "save") {
-        string filename = read();
+    else if(input[0] == "save") {
+        string filename = input[1];
 
         if(save(items, day, filename + ".txt")) {
             cout << "Game saved to file " << '\"' << filename << '\"' << endl;
@@ -274,9 +289,8 @@ int main() {
         }
     }
 
-    else if(input == "solve") {
-        int target;
-        cin >> target;
+    else if(input[0] == "solve") {
+        int target = stoi(input[1]);
         vector<bool> output = solve(target);
 
         cout << "--- Items to Sell ---" << endl;
@@ -304,7 +318,7 @@ int main() {
 
         cout << "Sell Items?" << endl << "y/n: ";
         input = read();
-        if(input == "y") {
+        if(input[0] == "y") {
             vector<item> toSell;
             for(int i = 0; i < items.size(); i++) {
                 if(output[i])
@@ -333,7 +347,12 @@ int main() {
         }
     }
 
-    else if(input == "sum") {
+    else if(input[0] == "sort") {
+        sort(items.begin(), items.end());
+        cout << "Inventory has been sorted" << endl;
+    } 
+
+    else if(input[0] == "sum") {
         int sum = 0;
 
         for(item &e : items) {
@@ -344,14 +363,13 @@ int main() {
         cout << "Lifetime sum: " << lifetime_sum << endl;
     }
 
-    else if(input == "view") {
-        input = read();
+    else if(input[0] == "view") {
 
-        if(input == "day") {
+        if(input[1] == "day") {
             cout << "Current day: " << day << endl;
         }
 
-        if(input == "inventory") {
+        else if(input[1] == "inventory") {
             if(items.size() == 0) {
                 cout << "Ship is currently empty" << endl;
                 goto start;
@@ -366,7 +384,7 @@ int main() {
             cout << "------------------------" << endl;
         } 
         
-        if(input == "saves") {
+        else if(input[1] == "saves") {
             cout << "--- Save files found ---" << endl;
             for(filesystem::path entry : filesystem::directory_iterator(savePath)) {
                 cout << entry.stem() << endl;
@@ -376,7 +394,7 @@ int main() {
     }
 
     else {
-        cout << "Command \"" << input << "\" is not valid" << endl;
+        cout << "Command \"" << input[0] << "\" is not valid" << endl;
     }
 
     goto start;
