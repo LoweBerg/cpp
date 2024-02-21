@@ -25,17 +25,16 @@ struct item {
 
 // constants
 const string savePath = "saves/";
-
-// variables
-vector<item> items;
-int day;
-int lifetime_sum;
-
 const vector<string> names = {"Airhorn", "Apparatice", "Bee Hive", "Big Bolt", "Bottles", "Brass Bell", "Candy", "Cash Register", "Chemical Jug", "Clown Horn", "Coffee Mug", "Comedy", 
                             "Cookie Mold Pan", "Double-Barrel", "Dust Pan", "Egg Beater", "Fancy Lamp", "Flask", "Gift Box", "Gold Bar", "Golden Cup", "Hair Brush", "Hairdryer", "Homemade Flashbang", 
                             "Jar Of Pickles", "Large Axle", "Laser Pointer", "Magic 7 Ball", "Magnifying glass", "Old Phone", "Painting", "Perfume Bottle", "Pill Bottle", "Plastic Fish", "Red Soda", "Remote",
                             "Ring", "Robot Toy", "Rubber Ducky", "Steering Wheel", "Stop Sign", "Tattered Metal Sheet", "Tea Kettle", "Teeth", "Toothpaste", "Toy Cube", "Tragedy", 
                             "V-Type Engine", "Whoopie-Cushion", "Yield Sign"};
+
+// variables
+vector<item> items;
+int day;
+int lifetime_sum;
 
 ostream& operator<<(ostream &out, const item &i) {
     out << i.id << " " << i.val;
@@ -143,6 +142,10 @@ vector<string> read() {
     return output;
 }
 
+void comErr(string input) {
+    cout << "Command \"" << input << "\" is not a valid command" << endl;
+}
+
 int main() {
 
     day = 1;
@@ -238,6 +241,9 @@ int main() {
 
     else if(input[0] == "pop") {
 
+        if(input.size() < 3)
+            goto start;
+
         int id = stoi(input[1]);
         int value = stoi(input[2]);
 
@@ -257,9 +263,10 @@ int main() {
 
     else if(input[0] == "push") {
 
-        item item;
+        if(input.size() < 3)
+            goto start;
 
-        cin >> item.id >> item.val;
+        item item(stoi(input[0]), stoi(input[1]));
 
         items.push_back(item);
         
@@ -391,10 +398,14 @@ int main() {
             }
             cout << "------------------------" << endl;
         }
+
+        else {
+            comErr(input[1]);
+        }
     }
 
     else {
-        cout << "Command \"" << input[0] << "\" is not valid" << endl;
+        comErr(input[0]);
     }
 
     goto start;
